@@ -2,12 +2,18 @@ package com.dnio.jmespath
 
 import com.dnio.jmespath.errors.JmespathError
 import com.fasterxml.jackson.databind.JsonNode
+import io.burt.jmespath.Expression
+import io.burt.jmespath.RuntimeConfiguration
 import io.burt.jmespath.function.FunctionRegistry
 import io.burt.jmespath.jackson.JacksonRuntime
-import io.burt.jmespath.{Expression, RuntimeConfiguration}
-import io.circe.jackson.{circeToJackson, jacksonToCirce}
-import io.circe.{Decoder, Json}
-import zio.{IO, Ref, ZIO, ZLayer}
+import io.circe.Decoder
+import io.circe.Json
+import io.circe.jackson.circeToJackson
+import io.circe.jackson.jacksonToCirce
+import zio.IO
+import zio.Ref
+import zio.ZIO
+import zio.ZLayer
 
 object JmespathZio {
 

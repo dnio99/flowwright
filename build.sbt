@@ -22,13 +22,14 @@ lazy val core = project
   .settings(
     libraryDependencies ++= coreDependencies
   )
+  .dependsOn(jmespath)
 
 lazy val jmespath = project
   .in(file("jmespath"))
   .enablePlugins(BuildInfoPlugin)
   .settings(commonSettings("jmespath"))
   .settings(
-    libraryDependencies ++= jmespathDependencies,
+    libraryDependencies ++= jmespathDependencies
   )
 
 lazy val shared = project

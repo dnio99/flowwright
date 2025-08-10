@@ -1,6 +1,7 @@
 package com.dnio.jmespath.errors
 
-import io.circe.{Decoder, Encoder}
+import io.circe.Decoder
+import io.circe.Encoder
 
 sealed trait JmespathError {
   val message: String
