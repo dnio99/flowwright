@@ -13,6 +13,7 @@ lazy val root = project
   )
   .aggregate(core)
   .aggregate(shared)
+  .aggregate(jmespath)
 
 lazy val core = project
   .in(file("core"))
@@ -20,6 +21,14 @@ lazy val core = project
   .settings(commonSettings("core"))
   .settings(
     libraryDependencies ++= coreDependencies
+  )
+
+lazy val jmespath = project
+  .in(file("jmespath"))
+  .enablePlugins(BuildInfoPlugin)
+  .settings(commonSettings("jmespath"))
+  .settings(
+    libraryDependencies ++= jmespathDependencies,
   )
 
 lazy val shared = project

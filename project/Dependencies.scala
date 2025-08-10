@@ -50,6 +50,14 @@ object Dependencies {
     "org.fusesource.jansi" % "jansi" % Versions.jansi
   ) ++ zioLogging
 
+  val jmesPath: Seq[ModuleID] = Seq(
+    "io.burt" % "jmespath-jackson" % "0.6.0"
+  )
+
+  var circeJackson: Seq[ModuleID] = Seq(
+    "io.circe" %% "circe-jackson217" % "0.14.2"
+  )
+
   val zioCore: Seq[ModuleID] = Seq(
     "dev.zio" %% "zio",
     "dev.zio" %% "zio-streams",
@@ -68,6 +76,9 @@ object Dependencies {
     "io.circe" %% "circe-generic",
     "io.circe" %% "circe-parser"
   ).map(_ % Versions.circe)
+
+  val jmespathDependencies: Seq[ModuleID] =
+    circeFamily ++ jmesPath ++ circeJackson ++ zioCore ++ logging
 
   val sharedDependencies: Seq[ModuleID] =
     circeFamily ++ zioFamily ++ http4sClient ++ http4sInteropCirce ++ logging
