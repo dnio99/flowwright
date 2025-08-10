@@ -1,0 +1,23 @@
+<configuration>
+
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <withJansi>true</withJansi>
+        <encoder>
+            <Pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} %msg%n</Pattern>
+        </encoder>
+    </appender>
+
+    <appender name="ASYNCSTDOUT" class="ch.qos.logback.classic.AsyncAppender">
+        <appender-ref ref="STDOUT" />
+    </appender>
+
+    <logger name="org.apache.kafka.clients" level="ERROR" />
+
+    <logger name="org.apache.kafka" level="ERROR" />
+
+
+    <root level="DEBUG">
+        <appender-ref ref="ASYNCSTDOUT" />
+    </root>
+
+</configuration>

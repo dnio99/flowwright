@@ -6,19 +6,28 @@ val scala3Version = "3.7.2"
 
 val rootName: String = "flowwright"
 
-
 lazy val root = project
   .in(file("."))
   .settings(
-    name := rootName,
+    name := rootName
   )
   .aggregate(core)
+  .aggregate(shared)
 
-lazy val core = project.in(file("core"))
+lazy val core = project
+  .in(file("core"))
   .enablePlugins(BuildInfoPlugin, DockerPlugin, JavaAppPackaging)
   .settings(commonSettings("core"))
   .settings(
     libraryDependencies ++= coreDependencies
+  )
+
+lazy val shared = project
+  .in(file("shared"))
+  .enablePlugins(BuildInfoPlugin)
+  .settings(commonSettings("shared"))
+  .settings(
+    libraryDependencies ++= sharedDependencies
   )
 
 def commonSettings(module: String) =
@@ -30,16 +39,15 @@ def commonSettings(module: String) =
     scalaVersion := scala3Version,
     semanticdbEnabled := true, // enable SemanticDB
     scalacOptions ++= Seq(
-      "-Xfatal-warnings"
+      "-Wunused:all"
+    ),
+    javaOptions ++= Seq(
+      "--enable-native-access=ALL-UNNAMED"
     ),
     // Disable doc generate
     Compile / doc / sources := Seq.empty,
-    Compile / packageDoc / publishArtifact := false,
-    scalacOptions ++= Seq(
-      "utf-8" // Specify character encoding used by source files. (可选，因为是默认值)
-    )
+    Compile / packageDoc / publishArtifact := false
   )
-
 
 def buildSettings(module: String) = Seq(
   buildInfoKeys := Seq[BuildInfoKey](name, version, scalaVersion, sbtVersion),
