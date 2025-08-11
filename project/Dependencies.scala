@@ -77,6 +77,10 @@ object Dependencies {
     "io.circe" %% "circe-parser"
   ).map(_ % Versions.circe)
 
+  val circeJsonSchema: Seq[ModuleID] = Seq(
+    "net.reactivecore" %% "circe-json-schema" % "0.4.1"
+  )
+
   val jmespathDependencies: Seq[ModuleID] =
     circeFamily ++ jmesPath ++ circeJackson ++ zioCore ++ logging
 
@@ -87,5 +91,6 @@ object Dependencies {
       http4sFamily ++
       zioFamily ++
       circeFamily ++
-      logging
+      logging ++
+      circeJsonSchema
 }

@@ -22,7 +22,7 @@ lazy val core = project
   .settings(
     libraryDependencies ++= coreDependencies
   )
-  .dependsOn(jmespath)
+  .dependsOn(jmespath, shared)
 
 lazy val jmespath = project
   .in(file("jmespath"))

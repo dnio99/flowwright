@@ -1,53 +1,44 @@
 package com.dnio.flowwright.core.node.http_request
-
-import io.circe.Json
-import org.http4s.Method
-
-final case class OriginalHttpRequestNode(
-    method: Option[String],
-    url: String,
-    headers: Option[Map[String, String]] = None,
-    body: Option[Json] = None,
-    bodyType: Option[String]
-)
+import com.dnio.flowwright.core.errors.WorkflowErrors
+import com.dnio.flowwright.core.errors.WorkflowErrors.WorkflowError
+import com.dnio.flowwright.core.node.NodeId
+import com.dnio.flowwright.core.node.WorkflowNode
+import com.dnio.flowwright.core.task.WorkflowTaskState
+import com.dnio.flowwright.core.workflow.WorkflowContextData
+import com.dnio.jmespath.JmespathZio
+import com.dnio.shared.http4s.syntax._
+import net.reactivecore.cjs.DocumentValidator
+import org.http4s.client.Client
+import zio.Task
+import zio.ZIO
 
 final case class HttpRequestNode(
-    method: Method,
-    url: String,
-    headers: Map[String, String],
-    body: Json,
-    bodyType: HttpRequestNode.BodyType
-)
+    id: NodeId,
+    name: String,
+    description: Option[String],
+    dependentOn: Seq[NodeId],
+    body: HttpRequestBody,
+    inputValidator: DocumentValidator,
+    outputValidator: DocumentValidator
+) extends WorkflowNode {
 
-object HttpRequestNode {
+  override type R = Client[Task] & JmespathZio.Service
 
-  protected enum BodyType:
-    private case JsonBody, FormBody, TextBody, NoBody;
+  override def execute(
+      data: WorkflowContextData,
+      workflowTaskState: WorkflowTaskState
+  ): ZIO[R, WorkflowError, Unit] =
+    for {
+      newBody <- body.resolver(data)
 
-  private object BodyType {
-    def fromString(value: Option[String]): BodyType = value
-      .map { v =>
-        v.toUpperCase() match {
-          case "JSON" => JsonBody
-          case "FORM" => FormBody
-          case "TEXT" => TextBody
-          case _      => NoBody
-        }
-      }
-      .getOrElse(NoBody)
-  }
+      uri <- ZIO
+        .fromEither(newBody.url.uri)
+        .mapError(e =>
+          WorkflowErrors.WorkflowNodeExecutionError(
+            "Invalid URL in HttpRequestNode",
+            Some(e.message)
+          )
+        )
 
-  def fromOriginal(original: OriginalHttpRequestNode): HttpRequestNode = {
-    HttpRequestNode(
-      method = original.method
-        .flatMap(Method.fromString(_).toOption)
-        .getOrElse(Method.GET),
-      url = original.url,
-      headers = original.headers.getOrElse(Map.empty),
-      body = original.body.getOrElse(Json.Null),
-      bodyType = BodyType.fromString(original.bodyType)
-    )
-
-  }
-
+    } yield ()
 }

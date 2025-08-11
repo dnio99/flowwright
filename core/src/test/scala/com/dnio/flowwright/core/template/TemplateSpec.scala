@@ -3,18 +3,19 @@ package com.dnio.flowwright.core.template
 import com.dnio.flowwright.core.test_layer.JmespathLayer
 import com.dnio.jmespath.JmespathZio
 import io.circe.Json
-import zio.{Ref, Scope, ZIO, ZLayer}
 import io.circe.syntax.*
-import zio.test.{Spec, TestEnvironment, ZIOSpecDefault, assertCompletes}
+import zio.test.{Spec, TestEnvironment, ZIOSpecDefault, assertTrue}
+import zio.{Ref, Scope, ZLayer}
 
 object TemplateSpec extends ZIOSpecDefault {
 
-  val layer: ZLayer[Any, Nothing, JmespathZio.Service] = ZLayer.make[JmespathZio.Service](
-    JmespathLayer.live
-  )
+  val layer: ZLayer[Any, Nothing, JmespathZio.Service] =
+    ZLayer.make[JmespathZio.Service](
+      JmespathLayer.live
+    )
 
   override def spec: Spec[TestEnvironment & Scope, Any] = suite("TemplateSpec")(
-    test("Template Resolver") {
+    test("Template Resolver Object") {
       (
         for {
           ref <- Ref.make(
@@ -38,18 +39,61 @@ object TemplateSpec extends ZIOSpecDefault {
             "name" -> Json.fromString("__{name}__"),
             "age" -> Json.fromString("__{age}__"),
             "city" -> Json.fromString("__{city}__"),
-            "skills" -> Json.fromString("__{skills[0]}__, __{skills[1]}__"),
+            "skills" -> Json.fromString("__{skills[0]}__"),
             "skillTest" -> Json.fromString("__{skillTest}__")
           )
 
-          res <- TemplateResolver.handle(
+          res <- TemplateResolver.handle[Map[String, Json], Map[String, Json]](
             dataRef = ref,
             template = template
           )
-          _ <- ZIO.logInfo(res.asJson.noSpaces)
-        } yield assertCompletes
+          expectResult =
+            """{"city":"New York","name":"John Doe","age":30,"skillTest":{"skill1":"Scala","skill2":"ZIO","skill3":"Akka"},"skills":"Scala"}"""
+          actual = res.asJson.noSpaces
+        } yield assertTrue(actual == expectResult)
       ).provideLayer(layer)
 
+    },
+    test("Template Resolver String") {
+      (
+        for {
+          ref <- Ref.make(
+            Map(
+              "openId" -> Json.fromString("dnio"),
+              "name" -> Json.fromString("John Doe")
+            )
+          )
+          template =
+            "https://api.dnio.com/user/__{openId}__/profile?name=__{name}__"
+
+          res <- TemplateResolver.handle[String, String](
+            dataRef = ref,
+            template = template
+          )
+        } yield assertTrue(
+          res == "https://api.dnio.com/user/dnio/profile?name=John Doe"
+        )
+      ).provideLayer(layer)
+    },
+    test("Template Resolver String 01") {
+      (
+        for {
+          ref <- Ref.make(
+            Map(
+              "name" -> Json.fromString("John Doe")
+            )
+          )
+          template =
+            "https://api.dnio.com/user/__{openId}__/profile?name=__{name}__"
+
+          res <- TemplateResolver.handle[String, String](
+            dataRef = ref,
+            template = template
+          )
+        } yield assertTrue(
+          res == "https://api.dnio.com/user/null/profile?name=John Doe"
+        )
+      ).provideLayer(layer)
     }
   )
 }
