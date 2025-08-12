@@ -1,6 +1,7 @@
 package com.dnio.flowwright.core.node
 
 import com.dnio.flowwright.core.errors.WorkflowErrors.WorkflowError
+import com.dnio.flowwright.core.interop.jmespath._
 import com.dnio.flowwright.core.workflow.WorkflowContextData
 import com.dnio.jmespath.JmespathZio
 import io.circe.Json
@@ -19,7 +20,28 @@ trait WorkflowNodeBody { self =>
       data: Ref[Map[String, Json]]
   ): ZIO[JmespathZio.Service, WorkflowError, T]
 
-  def run(
+  protected def logic(
       data: WorkflowContextData
   ): ZIO[R, WorkflowError, Json]
+
+  def run(
+      data: WorkflowContextData
+  ): ZIO[R & JmespathZio.Service, WorkflowError, Json] = {
+    for {
+      originalRes <- logic(data)
+      res <- (originalRes, postProcessExpression) match {
+        case (json, Some(expression)) if !json.isNull => {
+          for {
+            jmespath <- ZIO.service[JmespathZio.Service]
+            res <- jmespath
+              .search(json, expression)
+              .mapError(
+                _.toWorkflowError
+              )
+          } yield res
+        }
+        case _ => ZIO.succeed(originalRes)
+      }
+    } yield res
+  }
 }

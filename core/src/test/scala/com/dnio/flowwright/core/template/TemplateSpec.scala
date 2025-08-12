@@ -3,9 +3,14 @@ package com.dnio.flowwright.core.template
 import com.dnio.flowwright.core.test_layer.JmespathLayer
 import com.dnio.jmespath.JmespathZio
 import io.circe.Json
-import io.circe.syntax.*
-import zio.test.{Spec, TestEnvironment, ZIOSpecDefault, assertTrue}
-import zio.{Ref, Scope, ZLayer}
+import io.circe.syntax._
+import zio.Ref
+import zio.Scope
+import zio.ZLayer
+import zio.test.Spec
+import zio.test.TestEnvironment
+import zio.test.ZIOSpecDefault
+import zio.test.assertTrue
 
 object TemplateSpec extends ZIOSpecDefault {
 

@@ -1,9 +1,13 @@
 package com.dnio.flowwright.core.schema
 
 import io.circe.Json
-import net.reactivecore.cjs.{DocumentValidator, Loader}
-import zio.{Scope, ZIO}
-import zio.test.{Spec, TestEnvironment, ZIOSpecDefault, assertTrue}
+import net.reactivecore.cjs.Loader
+import zio.Scope
+import zio.ZIO
+import zio.test.Spec
+import zio.test.TestEnvironment
+import zio.test.ZIOSpecDefault
+import zio.test.assertTrue
 
 object SchemaSpec extends ZIOSpecDefault {
 

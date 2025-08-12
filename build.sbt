@@ -11,6 +11,8 @@ lazy val root = project
   .settings(
     name := rootName
   )
+  .settings(publish / skip := true)
+  .settings(Docker / publish := false)
   .aggregate(core)
   .aggregate(shared)
   .aggregate(jmespath)

@@ -2,6 +2,7 @@ package com.dnio.flowwright.core.template
 
 import com.dnio.flowwright.core.errors.WorkflowErrors
 import com.dnio.flowwright.core.errors.WorkflowErrors.WorkflowError
+import com.dnio.flowwright.core.workflow.WorkflowContextData
 import com.dnio.jmespath.JmespathZio
 import io.circe.Decoder
 import io.circe.Encoder
@@ -119,7 +120,7 @@ object TemplateResolver {
     Json.fromString(t);
   }
 
-  def handle[T, A](dataRef: Ref[Map[String, Json]], template: A)(using
+  def handle[T, A](dataRef: WorkflowContextData, template: A)(using
       Decoder[T],
       Encoder[A]
   ): ZIO[JmespathZio.Service, WorkflowError, T] = {

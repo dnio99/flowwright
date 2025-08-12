@@ -58,7 +58,7 @@ final case class HttpRequestBody(
 
   override type R = Client[Task] & JmespathZio.Service
 
-  override def run(
+  override def logic(
       data: WorkflowContextData
   ): ZIO[R, WorkflowError, Json] = {
     for {

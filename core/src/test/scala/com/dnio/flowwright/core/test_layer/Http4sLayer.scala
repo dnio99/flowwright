@@ -1,4 +1,4 @@
-package com.dnio.shared.test_layer
+package com.dnio.flowwright.core.test_layer
 
 import cats.effect.Async
 import fs2.io.net.Network

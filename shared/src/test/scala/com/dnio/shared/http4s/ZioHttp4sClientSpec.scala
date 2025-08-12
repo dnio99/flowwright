@@ -1,14 +1,20 @@
 package com.dnio.shared.http4s
 
 import com.dnio.shared.http4s.Http4sClient.LogLevel.Info
-import org.http4s.Request
-import com.dnio.shared.http4s.zio_interop.syntax.*
-import zio.{Scope, Task, ZIO, ZLayer}
-import zio.test.{Spec, TestEnvironment, ZIOSpecDefault, assertCompletes}
 import com.dnio.shared.http4s.zio_interop.ZioHttp4sClient.given
-import com.dnio.shared.test_layer.{Http4sLayer, LoggingLayer}
+import com.dnio.shared.http4s.zio_interop.syntax._
+import com.dnio.shared.test_layer.Http4sLayer
+import com.dnio.shared.test_layer.LoggingLayer
 import io.circe.Json
 import org.http4s.client.Client
+import zio.Scope
+import zio.Task
+import zio.ZIO
+import zio.ZLayer
+import zio.test.Spec
+import zio.test.TestEnvironment
+import zio.test.ZIOSpecDefault
+import zio.test.assertCompletes
 object ZioHttp4sClientSpec extends ZIOSpecDefault {
 
   val layer: ZLayer[Any, Throwable, Client[Task]] = ZLayer.make[Client[Task]](

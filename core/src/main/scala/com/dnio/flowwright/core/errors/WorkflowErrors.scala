@@ -31,4 +31,9 @@ object WorkflowErrors {
       code: Int
   ) extends WorkflowError
 
+  final case class WorkflowJmespathError(
+      message: String = "WorkflowJmespathError!",
+      description: Option[String] = None
+  ) extends WorkflowError
+
 }
