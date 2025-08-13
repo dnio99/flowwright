@@ -5,8 +5,17 @@ import com.dnio.flowwright.core.node.WorkflowNode
 import io.circe.Json
 import zio.Ref
 
+opaque type WorkflowId = String
+
+object WorkflowId {
+
+  def apply(id: String): WorkflowId = id
+
+  extension (workflowId: WorkflowId) def asString: String = workflowId
+}
+
 final case class Workflow(
-    id: String,
+    id: WorkflowId,
     name: String,
     description: Option[String],
     nodes: Map[NodeId, WorkflowNode]
