@@ -2,17 +2,16 @@ package com.dnio.flowwright.core.parser
 
 import com.dnio.flowwright.core.errors.WorkflowErrors
 import com.dnio.flowwright.core.node.http_request.HttpRequestNode
-import zio.{Scope, ZIO}
-import io.circe.parser.*
-import zio.test.{
-  Spec,
-  TestEnvironment,
-  ZIOSpecDefault,
-  assertCompletes,
-  assertTrue
-}
+import io.circe.parser._
+import zio.Scope
+import zio.ZIO
+import zio.test.Spec
+import zio.test.TestEnvironment
+import zio.test.ZIOSpecDefault
+import zio.test.assertCompletes
+import zio.test.assertTrue
 
-object ParserSpec extends ZIOSpecDefault {
+object NodeParserSpec extends ZIOSpecDefault {
 
   override def spec: Spec[TestEnvironment & Scope, Any] = suite("ParserSpec")(
     test("Parser HttpRequest Test") {
