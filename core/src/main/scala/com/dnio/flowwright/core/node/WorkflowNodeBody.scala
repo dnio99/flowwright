@@ -8,7 +8,7 @@ import io.circe.Json
 import zio.Ref
 import zio.ZIO
 
-trait WorkflowNodeBody { self =>
+trait WorkflowNodeBody {
 
   val postProcessExpression: Option[String]
 

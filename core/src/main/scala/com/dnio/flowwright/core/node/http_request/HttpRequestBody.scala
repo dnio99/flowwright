@@ -10,7 +10,8 @@ import com.dnio.jmespath.JmespathZio
 import com.dnio.shared.http4s.syntax._
 import com.dnio.shared.http4s.zio_interop.ZioHttp4sClient
 import com.dnio.shared.http4s.zio_interop.ZioHttp4sClient.given
-import io.circe.Decoder.given
+import io.circe.Decoder
+import io.circe.Encoder
 import io.circe.Json
 import org.http4s.Method
 import org.http4s.Request
@@ -26,7 +27,8 @@ final case class OriginalHttpRequestBody(
     body: Option[Json] = None,
     bodyType: Option[String],
     postProcessExpression: Option[String] = None
-)
+) derives Encoder.AsObject,
+      Decoder
 
 final case class HttpRequestBody(
     method: Method,
@@ -115,6 +117,7 @@ object HttpRequestBody {
   def fromOriginal(original: OriginalHttpRequestBody): HttpRequestBody = {
     HttpRequestBody(
       method = original.method
+        .map(_.toUpperCase())
         .flatMap(Method.fromString(_).toOption)
         .getOrElse(Method.GET),
       url = original.url,

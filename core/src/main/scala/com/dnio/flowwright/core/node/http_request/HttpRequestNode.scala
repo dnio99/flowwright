@@ -1,7 +1,7 @@
 package com.dnio.flowwright.core.node.http_request
 import com.dnio.flowwright.core.errors.WorkflowErrors.WorkflowError
 import com.dnio.flowwright.core.node.NodeId
-import com.dnio.flowwright.core.node.NodeId._
+import com.dnio.flowwright.core.node.NodeValidator
 import com.dnio.flowwright.core.node.WorkflowNode
 import com.dnio.flowwright.core.task.WorkflowTaskState
 import com.dnio.flowwright.core.workflow.WorkflowContextData
@@ -17,18 +17,27 @@ final case class HttpRequestNode(
     description: Option[String],
     dependentOn: Seq[NodeId],
     body: HttpRequestBody,
-    inputValidator: Option[DocumentValidator],
-    outputValidator: Option[DocumentValidator]
-) extends WorkflowNode {
+    inputValidator: Option[DocumentValidator] = None,
+    outputValidator: Option[DocumentValidator] = None
+) extends WorkflowNode,
+      NodeValidator {
 
-  override type R = Client[Task] & JmespathZio.Service
+  type R = Client[Task] & JmespathZio.Service
 
   override def execute(
       data: WorkflowContextData,
       workflowTaskState: WorkflowTaskState
-  ): ZIO[R, WorkflowError, Unit] =
+  ): ZIO[R, WorkflowError, Unit] = {
     for {
       res <- body.run(data)
-      _ <- data.update(map => map + (id.asString -> res))
+
+      _ <- data.update(map =>
+        map.updated(
+          id.asString,
+          res
+        )
+      )
     } yield ()
+  }
+
 }
