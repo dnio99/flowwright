@@ -1,7 +1,7 @@
 package com.dnio.flowwright.core.parser
 
 import com.dnio.flowwright.core.errors.WorkflowErrors
-import com.dnio.flowwright.core.node.http_request.HttpRequestNode
+import com.dnio.flowwright.core.node.WorkflowNode.HttpRequestNode
 import io.circe.parser._
 import zio.Scope
 import zio.ZIO

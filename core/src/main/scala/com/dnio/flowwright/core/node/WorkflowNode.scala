@@ -1,32 +1,101 @@
 package com.dnio.flowwright.core.node
 import com.dnio.flowwright.core.errors.WorkflowErrors.WorkflowError
-import com.dnio.flowwright.core.node.http_request.HttpRequestBody
+import com.dnio.flowwright.core.node.body.WorkflowNodeBody
+import com.dnio.flowwright.core.node.body.WorkflowNodeBody._
+import com.dnio.flowwright.core.task.TaskStatus
+import com.dnio.flowwright.core.task.WorkflowTask
 import com.dnio.flowwright.core.task.WorkflowTaskState
 import com.dnio.flowwright.core.workflow.WorkflowContextData
+import com.dnio.jmespath.JmespathZio
+import io.circe.Json
+import net.reactivecore.cjs.DocumentValidator
+import org.http4s.client.Client
+import zio.Task
 import zio.ZIO
 
-opaque type NodeId = String
+sealed trait WorkflowNode {
 
-object NodeId {
-
-  def apply(id: String): NodeId = id
-
-  extension (nodeId: NodeId) def asString: String = nodeId
-}
-
-abstract class WorkflowNode {
+  type R
 
   val id: NodeId
   val name: String
   val description: Option[String]
   val dependentOn: Seq[NodeId]
-  val body: HttpRequestBody
+  val body: WorkflowNodeBody[R, ?]
 
-  type R
+  val kind: NodeKind
 
   def execute(
       data: WorkflowContextData,
       workflowTaskState: WorkflowTaskState
-  ): ZIO[R, WorkflowError, Unit]
+  ): ZIO[R & JmespathZio.Service, WorkflowError, Json] = {
+    val logic = for {
+      res <- body.run(data)
 
+      _ <- data.update(map =>
+        map.updated(
+          id.asString,
+          res
+        )
+      )
+    } yield res
+
+    logic.tapBoth(
+      e =>
+        workflowTaskState.update(
+          _.updated(
+            id,
+            WorkflowTask(id = id, status = TaskStatus.Failed(e), result = None)
+          )
+        ),
+      json =>
+        workflowTaskState
+          .update(
+            _.updated(
+              id,
+              WorkflowTask(
+                id = id,
+                status = TaskStatus.Succeeded(),
+                result = None
+              )
+            )
+          )
+          .as(json)
+    )
+
+  }
+
+}
+
+object WorkflowNode {
+  final case class EndNode(
+      id: NodeId,
+      name: String,
+      description: Option[String] = None,
+      dependentOn: Seq[NodeId],
+      body: EndBody
+  ) extends WorkflowNode {
+
+    override val kind: NodeKind = NodeKind.End
+
+    override type R = JmespathZio.Service
+
+  }
+
+  final case class HttpRequestNode(
+      id: NodeId,
+      name: String,
+      description: Option[String],
+      dependentOn: Seq[NodeId],
+      body: HttpRequestBody,
+      inputValidator: Option[DocumentValidator] = None,
+      outputValidator: Option[DocumentValidator] = None
+  ) extends WorkflowNode,
+        NodeValidator {
+
+    override val kind: NodeKind = NodeKind.HttpRequest
+
+    type R = Client[Task] & JmespathZio.Service
+
+  }
 }

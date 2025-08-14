@@ -6,8 +6,8 @@ import com.dnio.flowwright.core.errors.WorkflowErrors.WorkflowError
 import com.dnio.flowwright.core.node.NodeId
 import com.dnio.flowwright.core.node.OriginalWorkflowNode
 import com.dnio.flowwright.core.node.WorkflowNode
-import com.dnio.flowwright.core.node.http_request.HttpRequestBody
-import com.dnio.flowwright.core.node.http_request.HttpRequestNode
+import com.dnio.flowwright.core.node.WorkflowNode._
+import com.dnio.flowwright.core.node.body.WorkflowNodeBody._
 import com.dnio.flowwright.core.parser.body.BodyParser
 import io.circe.Json
 import net.reactivecore.cjs.Loader
@@ -80,6 +80,14 @@ object NodeParser {
             body = httpRequestBody,
             inputValidator = inputValidator,
             outputValidator = outputValidator
+          )
+        case endBody: EndBody =>
+          EndNode(
+            id = id,
+            name = originalWorkflowNode.name,
+            description = originalWorkflowNode.description,
+            dependentOn = dependentOn,
+            body = endBody
           )
       }
 

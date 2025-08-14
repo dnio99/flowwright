@@ -1,23 +1,20 @@
 package com.dnio.flowwright.core.parser.body
 
 import com.dnio.flowwright.core.errors.WorkflowErrors
-import com.dnio.flowwright.core.node.NodeKind
-import com.dnio.flowwright.core.node.http_request.HttpRequestBody
-import com.dnio.flowwright.core.node.http_request.OriginalHttpRequestBody
+import com.dnio.flowwright.core.node.body.OriginalHttpRequestBody
+import com.dnio.flowwright.core.node.body.WorkflowNodeBody
+import io.circe.Decoder
 import io.circe.Json
 
-object HttpRequestBodyParser extends BodyParser[HttpRequestBody] {
-
-  val nodeKind: NodeKind = NodeKind.HttpRequest
+object HttpRequestBodyParser extends BodyParser[OriginalHttpRequestBody] {
 
   override def parse(
       json: Json
-  ): Either[WorkflowErrors.WorkflowError, HttpRequestBody] = {
+  )(using
+      Decoder[OriginalHttpRequestBody]
+  ): Either[WorkflowErrors.WorkflowError, WorkflowNodeBody[?, ?]] = {
     json
       .as[OriginalHttpRequestBody]
-      .map(
-        HttpRequestBody.fromOriginal
-      )
       .left
       .map(e =>
         WorkflowErrors.WorkflowNodeParseError(
@@ -25,5 +22,6 @@ object HttpRequestBodyParser extends BodyParser[HttpRequestBody] {
           Some(e.getMessage)
         )
       )
+      .flatMap(_.toWorkflowNodeBody)
   }
 }

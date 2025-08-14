@@ -1,14 +1,17 @@
 package com.dnio.flowwright.core.parser.body
 import com.dnio.flowwright.core.errors.WorkflowErrors.WorkflowError
 import com.dnio.flowwright.core.node.NodeKind
-import com.dnio.flowwright.core.node.WorkflowNodeBody
+import com.dnio.flowwright.core.node.body.OriginalEndBody
+import com.dnio.flowwright.core.node.body.OriginalWorkflowNodeBody
+import com.dnio.flowwright.core.node.body.WorkflowNodeBody
+import io.circe.Decoder
 import io.circe.Json
 
-trait BodyParser[T <: WorkflowNodeBody] {
+trait BodyParser[T <: OriginalWorkflowNodeBody] {
 
-  val nodeKind: NodeKind
-
-  def parse(json: Json): Either[WorkflowError, T]
+  def parse(json: Json)(using
+      Decoder[T]
+  ): Either[WorkflowError, WorkflowNodeBody[?, ?]]
 
 }
 
@@ -17,9 +20,10 @@ object BodyParser {
   def parse(
       nodeKind: NodeKind,
       json: Json
-  ): Either[WorkflowError, WorkflowNodeBody] = {
+  ): Either[WorkflowError, WorkflowNodeBody[?, ?]] = {
     nodeKind match {
       case NodeKind.HttpRequest => HttpRequestBodyParser.parse(json)
+      case NodeKind.End         => CommonParser[OriginalEndBody]().parse(json)
     }
   }
 }

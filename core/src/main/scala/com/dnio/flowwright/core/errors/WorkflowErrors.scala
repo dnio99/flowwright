@@ -51,6 +51,11 @@ object WorkflowErrors {
       description: Option[String] = None
   ) extends WorkflowError
 
+  final case class WorkflowCycleError(
+      message: String = "WorkflowCycleError!",
+      description: Option[String] = None
+  ) extends WorkflowError
+
   final case class WorkflowBodyParserNotFoundError(
       message: String = "WorkflowBodyParserNotFoundError!",
       description: Option[String] = None
