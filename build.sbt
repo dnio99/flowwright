@@ -16,6 +16,7 @@ lazy val root = project
   .aggregate(core)
   .aggregate(shared)
   .aggregate(jmespath)
+  .aggregate(api)
 
 lazy val core = project
   .in(file("core"))
@@ -25,6 +26,18 @@ lazy val core = project
     libraryDependencies ++= coreDependencies
   )
   .dependsOn(jmespath, shared)
+
+lazy val api = project
+  .in(file("api"))
+  .enablePlugins(BuildInfoPlugin, DockerPlugin, JavaAppPackaging)
+  .settings(commonSettings("api"))
+  .settings(
+    buildSettings("api") *
+  )
+  .settings(
+    libraryDependencies ++= apiDependencies
+  )
+  .dependsOn(core)
 
 lazy val jmespath = project
   .in(file("jmespath"))
@@ -51,7 +64,8 @@ def commonSettings(module: String) =
     scalaVersion := scala3Version,
     semanticdbEnabled := true, // enable SemanticDB
     scalacOptions ++= Seq(
-      "-Wunused:all"
+      "-Wunused:all",
+      "-Xkind-projector"
     ),
     javaOptions ++= Seq(
       "--enable-native-access=ALL-UNNAMED"

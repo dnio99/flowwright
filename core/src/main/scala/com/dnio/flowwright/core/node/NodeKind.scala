@@ -10,7 +10,7 @@ import io.circe.Json
 import scala.util.Try
 
 enum NodeKind:
-  case HttpRequest, End;
+  case Start, HttpRequest, End;
 
 object NodeKind {
   given Encoder[NodeKind] = (a: NodeKind) => Json.fromString(a.toString)

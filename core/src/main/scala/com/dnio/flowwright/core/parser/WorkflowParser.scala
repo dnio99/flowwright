@@ -2,7 +2,6 @@ package com.dnio.flowwright.core.parser
 
 import cats.implicits._
 import com.dnio.flowwright.core.errors.WorkflowErrors
-import io.circe.parser.*
 import com.dnio.flowwright.core.errors.WorkflowErrors.WorkflowError
 import com.dnio.flowwright.core.node.NodeId
 import com.dnio.flowwright.core.node.NodeKind
@@ -12,6 +11,7 @@ import com.dnio.flowwright.core.workflow.OriginalWorkflow
 import com.dnio.flowwright.core.workflow.Workflow
 import com.dnio.flowwright.core.workflow.WorkflowId
 import io.circe.Json
+import io.circe.parser._
 
 object WorkflowParser {
 
@@ -129,9 +129,7 @@ object WorkflowParser {
 
     val dependentOnIds = workflowNodes.flatMap(_.dependentOn).toSet
 
-    workflowNodes.filter(node =>
-      !dependentOnIds.contains(node.id) && node.dependentOn.nonEmpty
-    )
+    workflowNodes.filter(node => !dependentOnIds.contains(node.id))
   }
 
   private def checkNodeId(

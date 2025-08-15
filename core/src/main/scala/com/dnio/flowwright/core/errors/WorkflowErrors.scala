@@ -2,7 +2,10 @@ package com.dnio.flowwright.core.errors
 
 object WorkflowErrors {
 
-  trait WorkflowError {}
+  trait WorkflowError {
+    val message: String
+    val description: Option[String]
+  }
 
   final case class TemplateParseError(
       message: String = "TemplateParseError!",

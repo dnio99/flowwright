@@ -11,7 +11,8 @@ final case class WorkflowTask(
     status: TaskStatus = TaskStatus.Pending(),
     result: Option[Json] = None,
     createdAt: Instant = Instant.now(),
-    updatedAt: Instant = Instant.now()
+    updatedAt: Instant = Instant.now(),
+    version: Int = 0
 )
 
 type WorkflowTaskState = Ref[Map[NodeId, WorkflowTask]]

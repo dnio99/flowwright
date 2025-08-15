@@ -10,10 +10,8 @@ import com.dnio.jmespath.JmespathZio
 import com.dnio.shared.http4s.syntax._
 import com.dnio.shared.http4s.zio_interop.ZioHttp4sClient
 import com.dnio.shared.http4s.zio_interop.ZioHttp4sClient.given
-import io.circe.Decoder
-import io.circe.Encoder
 import io.circe.Json
-import io.circe.syntax._
+import io.circe.syntax.EncoderOps
 import org.http4s.Method
 import org.http4s.Request
 import org.http4s.circe.CirceEntityCodec.circeEntityEncoder
@@ -27,7 +25,7 @@ sealed trait WorkflowNodeBody[R, T] {
   val postProcessExpression: Option[String]
 
   def resolver(
-      data: Ref[Map[String, Json]]
+      data: WorkflowContextData
   ): ZIO[JmespathZio.Service, WorkflowError, T]
 
   protected def logic(
@@ -57,6 +55,25 @@ sealed trait WorkflowNodeBody[R, T] {
 }
 
 object WorkflowNodeBody {
+
+  final case class StartBody(
+      input: Map[String, Json],
+      postProcessExpression: Option[String] = None
+  ) extends WorkflowNodeBody[JmespathZio.Service, StartBody] {
+
+    override def resolver(data: WorkflowContextData) = {
+      TemplateResolver
+        .handle[Map[String, Json], Map[String, Json]](
+          data,
+          input
+        )
+        .map(newInput => this.copy(input = newInput))
+    }
+
+    override protected def logic(data: WorkflowContextData) = {
+      resolver(data).map(body => body.input.asJson)
+    }
+  }
 
   final case class EndBody(
       output: Map[String, String],
@@ -125,8 +142,6 @@ object WorkflowNodeBody {
               Some(e.message)
             )
           )
-
-        // todo: body type
 
         res <- ZioHttp4sClient
           .request[Json](

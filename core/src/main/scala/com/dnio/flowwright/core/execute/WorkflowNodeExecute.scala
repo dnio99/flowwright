@@ -74,19 +74,22 @@ object WorkflowNodeExecute {
                 Some("Dependent node is in failed state")
               )
             ),
-            updatedAt = Instant.now()
+            updatedAt = Instant.now(),
+            version = currentTask.version + 1
           )
           (task, stateMap.updated(nodeId, task))
         case (_, true, _, _) =>
           val task = currentTask.copy(
             status = TaskStatus.Pending(),
-            updatedAt = Instant.now()
+            updatedAt = Instant.now(),
+            version = currentTask.version + 1
           )
           (task, stateMap.updated(nodeId, task))
         case (_, _, true, TaskStatus.Pending()) =>
           val task = currentTask.copy(
             status = TaskStatus.Waiting(),
-            updatedAt = Instant.now()
+            updatedAt = Instant.now(),
+            version = currentTask.version + 1
           )
           (task, stateMap.updated(nodeId, task))
 
@@ -129,6 +132,9 @@ object WorkflowNodeExecute {
         workflowState = workflowTaskState
       )
 
+      _ <- ZIO.logDebug(
+        s"run node: ${workflowNode.name}, status: ${task.status}, version: ${task.version}"
+      )
       _ <- task.status match {
         case TaskStatus.Waiting() =>
           workflowTaskState.update(

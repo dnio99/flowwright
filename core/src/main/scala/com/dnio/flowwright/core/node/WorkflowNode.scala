@@ -2,6 +2,10 @@ package com.dnio.flowwright.core.node
 import com.dnio.flowwright.core.errors.WorkflowErrors.WorkflowError
 import com.dnio.flowwright.core.node.body.WorkflowNodeBody
 import com.dnio.flowwright.core.node.body.WorkflowNodeBody._
+import com.dnio.flowwright.core.node.validator.InputMandatoryValidator
+import com.dnio.flowwright.core.node.validator.InputValidator
+import com.dnio.flowwright.core.node.validator.OutputMandatoryValidator
+import com.dnio.flowwright.core.node.validator.OutputValidator
 import com.dnio.flowwright.core.task.TaskStatus
 import com.dnio.flowwright.core.task.WorkflowTask
 import com.dnio.flowwright.core.task.WorkflowTaskState
@@ -68,6 +72,24 @@ sealed trait WorkflowNode {
 }
 
 object WorkflowNode {
+
+  final case class StartNode(
+      id: NodeId,
+      name: String,
+      description: Option[String] = None,
+      dependentOn: Seq[NodeId] = Seq.empty,
+      body: StartBody,
+      inputValidator: Some[DocumentValidator],
+      outputValidator: Some[DocumentValidator]
+  ) extends WorkflowNode,
+        InputMandatoryValidator,
+        OutputMandatoryValidator {
+
+    override val kind: NodeKind = NodeKind.Start
+
+    override type R = JmespathZio.Service
+  }
+
   final case class EndNode(
       id: NodeId,
       name: String,
@@ -91,7 +113,8 @@ object WorkflowNode {
       inputValidator: Option[DocumentValidator] = None,
       outputValidator: Option[DocumentValidator] = None
   ) extends WorkflowNode,
-        NodeValidator {
+        InputValidator,
+        OutputValidator {
 
     override val kind: NodeKind = NodeKind.HttpRequest
 

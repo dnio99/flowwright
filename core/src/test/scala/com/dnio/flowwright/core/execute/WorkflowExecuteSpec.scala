@@ -6,7 +6,13 @@ import com.dnio.jmespath.JmespathZio
 import io.circe.Json
 import org.http4s.client.Client
 import zio.{Scope, Task, ZIO, ZLayer}
-import zio.test.{Spec, TestEnvironment, ZIOSpecDefault, assertCompletes}
+import zio.test.{
+  Spec,
+  TestAspect,
+  TestEnvironment,
+  ZIOSpecDefault,
+  assertCompletes
+}
 
 object WorkflowExecuteSpec extends ZIOSpecDefault {
 
@@ -76,6 +82,86 @@ object WorkflowExecuteSpec extends ZIOSpecDefault {
           res <- WorkflowExecute.execute(
             workflow,
             Map("tenantId" -> Json.fromString("test-tenant"))
+          )
+
+          _ <- ZIO.logInfo(res.noSpaces)
+
+        } yield assertCompletes).provideLayer(layer)
+      } @@ TestAspect.ignore,
+      test("Execute Workflow Test 01") {
+
+        val jsonStr = """{
+                        |    "id": "workflow test",
+                        |    "name": "工作流测试",
+                        |    "nodes": [
+                        |        {
+                        |            "id": "get_job_entity_by_id",
+                        |            "name": "获取职位实体",
+                        |            "description": "获取职位实体",
+                        |            "body": {
+                        |                "url": "https://ruleengine.nadileaf.com/v2/entity/__{tenantId}__/Job/__{jobId}__"
+                        |            },
+                        |            "kind": "HttpRequest"
+                        |        },
+                        |        {
+                        |            "id": "get_recommend_config",
+                        |            "name": "获取推荐配置",
+                        |            "description": "获取推荐配置",
+                        |            "body": {
+                        |                "url": "https://ruleengine.nadileaf.com/v2/entity/standard/GlobalConfig/__{recommendConfig}__",
+                        |                "postProcessExpression": "string_to_json(data.standardFields.config)"
+                        |            },
+                        |            "kind": "HttpRequest"
+                        |        },
+                        |         {
+                        |            "id": "recommend",
+                        |            "name": "以岗推人",
+                        |            "description": "以岗推人",
+                        |             "dependentOn": [
+                        |                "get_job_entity_by_id",
+                        |                "get_recommend_config"
+                        |            ],
+                        |            "body": {
+                        |                "method": "POST",
+                        |                "url": "https://effex-recsys.nadileaf.com/v2/search",
+                        |                "body": {
+                        |                    "config": "__{get_recommend_config}__",
+                        |                    "data": "__{get_job_entity_by_id}__"
+                        |                }
+                        |            },
+                        |            "kind": "HttpRequest"
+                        |        },
+                        |        {
+                        |            "id": "end",
+                        |            "name": "结束",
+                        |            "dependentOn": [
+                        |                "recommend"
+                        |            ],
+                        |            "description": "结束",
+                        |            "body": {
+                        |                "output": {
+                        |                    "body": "__{get_job_entity_by_id}__",
+                        |                    "config": "__{get_recommend_config}__",
+                        |                    "result": "__{recommend}__"
+                        |                }
+                        |            },
+                        |            "kind": "End"
+                        |        }
+                        |    ]
+                        |}""".stripMargin
+        (for {
+
+          workflow <- ZIO.fromEither(WorkflowParser.parse(jsonStr))
+
+          res <- WorkflowExecute.execute(
+            workflow,
+            Map(
+              "tenantId" -> Json.fromString("yingcaiwanglianbailing"),
+              "jobId" -> Json.fromString("5375799"),
+              "recommendConfig" -> Json.fromString(
+                "yingcaiwanglianbailing-recsys-job_resume-public"
+              )
+            )
           )
 
           _ <- ZIO.logInfo(res.noSpaces)

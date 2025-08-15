@@ -1,4 +1,5 @@
 package com.dnio.flowwright.core.execute
+
 import com.dnio.flowwright.core.errors.WorkflowErrors
 import com.dnio.flowwright.core.node.NodeId
 import com.dnio.flowwright.core.node.WorkflowNode
@@ -77,9 +78,11 @@ object WorkflowExecute {
         if (isTerminated) {
           terminalLogic(workflow, data, workflowTaskState)
         } else {
-          val nextNodes = workflowNodes.flatMap(node =>
-            workflow.childrenNodes.getOrElse(node.id, Seq.empty)
-          )
+          val nextNodes = workflowNodes
+            .flatMap(node =>
+              workflow.childrenNodes.getOrElse(node.id, Seq.empty)
+            )
+            .distinctBy(_.id)
           runNodes(workflow, data, workflowTaskState, nextNodes)
         }
 
@@ -87,7 +90,10 @@ object WorkflowExecute {
 
   }
 
-  def execute(workflow: Workflow, initData: Map[String, Json] = Map.empty): ZIO[Client[
+  def execute(
+      workflow: Workflow,
+      initData: Map[String, Json] = Map.empty
+  ): ZIO[Client[
     Task
   ] & JmespathZio.Service, WorkflowErrors.WorkflowError, Json] = {
     val initTasks =

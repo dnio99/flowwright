@@ -3,7 +3,7 @@ import sbt.*
 object Dependencies {
 
   object Versions {
-    val tapir = "1.11.41"
+    val tapir = "1.11.42"
     val http4s = "0.23.30"
     val zio = "2.1.20"
     val zioLogging = "2.5.1"
@@ -14,7 +14,7 @@ object Dependencies {
     val jansi = "2.4.2"
   }
 
-  val tapir: Seq[ModuleID] = Seq(
+  val tapirFamily: Seq[ModuleID] = Seq(
     "com.softwaremill.sttp.tapir" %% "tapir-zio",
     "com.softwaremill.sttp.tapir" %% "tapir-http4s-server-zio",
     "com.softwaremill.sttp.tapir" %% "tapir-json-circe",
@@ -86,9 +86,11 @@ object Dependencies {
 
   val sharedDependencies: Seq[ModuleID] =
     circeFamily ++ zioFamily ++ http4sClient ++ http4sInteropCirce ++ logging
+
+  val apiDependencies: Seq[ModuleID] = tapirFamily ++ http4sServer
+
   val coreDependencies: Seq[ModuleID] =
-    tapir ++
-      http4sFamily ++
+    http4sFamily ++
       zioFamily ++
       circeFamily ++
       logging ++

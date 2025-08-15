@@ -1,6 +1,7 @@
 package com.dnio.jmespath
 
 import com.dnio.jmespath.errors.JmespathError
+import com.dnio.jmespath.functions.json.StringToJsonFunction
 import com.fasterxml.jackson.databind.JsonNode
 import io.burt.jmespath.Expression
 import io.burt.jmespath.RuntimeConfiguration
@@ -195,6 +196,7 @@ object JmespathZio {
       val functionRegistry = FunctionRegistry
         .defaultRegistry()
         .extend(
+          new StringToJsonFunction()
         )
       val runtimeConfiguration = RuntimeConfiguration
         .builder()
