@@ -61,7 +61,7 @@ object WorkflowExecute {
 
     for {
       // check return
-      _ <- ZIO.foreachPar(workflowNodes)(node =>
+      _ <- ZIO.foreachDiscard(workflowNodes)(node =>
         WorkflowNodeExecute.run(
           data = data,
           workflowTaskState = workflowTaskState,
@@ -108,7 +108,7 @@ object WorkflowExecute {
         workflow = workflow,
         data = workflowContextData,
         workflowTaskState = workflowState,
-        workflowNodes = workflow.getRootNodes
+        workflowNodes = Seq(workflow.startNode)
       )
     } yield res
   }

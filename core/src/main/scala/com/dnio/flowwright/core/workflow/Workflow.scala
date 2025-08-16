@@ -2,6 +2,7 @@ package com.dnio.flowwright.core.workflow
 import com.dnio.flowwright.core.node.NodeId
 import com.dnio.flowwright.core.node.WorkflowNode
 import com.dnio.flowwright.core.node.WorkflowNode.EndNode
+import com.dnio.flowwright.core.node.WorkflowNode.StartNode
 import io.circe.Json
 import zio.Ref
 
@@ -19,13 +20,10 @@ final case class Workflow(
     name: String,
     description: Option[String],
     nodes: Seq[WorkflowNode],
+    startNode: StartNode,
     endNode: EndNode,
     leafNodeIds: Set[NodeId],
     childrenNodes: Map[NodeId, Seq[WorkflowNode]]
-) {
-
-  val getRootNodes: Seq[WorkflowNode] = nodes.filter(_.dependentOn.isEmpty)
-
-}
+) {}
 
 type WorkflowContextData = Ref[Map[String, Json]]

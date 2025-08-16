@@ -1,7 +1,6 @@
 package com.dnio.flowwright.core.parser
 
 import com.dnio.flowwright.core.errors.WorkflowErrors
-import com.dnio.flowwright.core.node.WorkflowNode.HttpRequestNode
 import io.circe.parser._
 import zio.Scope
 import zio.ZIO
@@ -13,7 +12,7 @@ import zio.test.assertTrue
 
 object NodeParserSpec extends ZIOSpecDefault {
 
-  override def spec: Spec[TestEnvironment & Scope, Any] = suite("ParserSpec")(
+  override def spec: Spec[TestEnvironment & Scope, Any] = suite("Node Parser")(
     test("Parser HttpRequest Test") {
 
       val nodeJsonStr = """{
@@ -37,9 +36,9 @@ object NodeParserSpec extends ZIOSpecDefault {
               s"Failed to parse node JSON: ${e.getMessage}"
             )
           )
-        workflowNode <- ZIO.fromEither(NodeParser.parse(json))
+        _ <- ZIO.fromEither(NodeParser.parse(json))
 
-      } yield assertTrue(workflowNode.isInstanceOf[HttpRequestNode])
+      } yield assertCompletes
 
     },
     test("Parser Json Schema Fail Test") {

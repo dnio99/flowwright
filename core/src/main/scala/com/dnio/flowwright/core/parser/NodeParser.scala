@@ -14,6 +14,18 @@ import net.reactivecore.cjs.Loader
 
 object NodeParser {
 
+  def parse(str: String): Either[WorkflowError, WorkflowNode] = {
+    io.circe.parser
+      .parse(str)
+      .left
+      .map(e =>
+        WorkflowErrors.WorkflowNodeParseError(
+          s"Failed to parse node JSON: ${e.getMessage}"
+        )
+      )
+      .flatMap(parse)
+  }
+
   def parse(
       json: Json
   ): Either[WorkflowError, WorkflowNode] = {
@@ -70,24 +82,50 @@ object NodeParser {
         originalWorkflowNode.body
       )
 
-      res = body match {
+      res <- body match {
         case httpRequestBody: HttpRequestBody =>
-          HttpRequestNode(
-            id = id,
-            name = originalWorkflowNode.name,
-            description = originalWorkflowNode.description,
-            dependentOn = dependentOn,
-            body = httpRequestBody,
-            inputValidator = inputValidator,
-            outputValidator = outputValidator
+          Right(
+            HttpRequestNode(
+              id = id,
+              name = originalWorkflowNode.name,
+              description = originalWorkflowNode.description,
+              dependentOn = dependentOn,
+              body = httpRequestBody,
+              inputValidator = inputValidator,
+              outputValidator = outputValidator
+            )
           )
+        case startBody: StartBody =>
+          (inputValidator, outputValidator) match {
+            case (Some(input), Some(output)) =>
+              Right(
+                StartNode(
+                  id = id,
+                  name = originalWorkflowNode.name,
+                  description = originalWorkflowNode.description,
+                  dependentOn = dependentOn,
+                  body = startBody,
+                  inputValidator = Some(input),
+                  outputValidator = Some(output)
+                )
+              )
+            case _ =>
+              Left(
+                WorkflowErrors.WorkflowNodeParseError(
+                  "start Node require inputValidator and outputValidator"
+                )
+              )
+          }
+
         case endBody: EndBody =>
-          EndNode(
-            id = id,
-            name = originalWorkflowNode.name,
-            description = originalWorkflowNode.description,
-            dependentOn = dependentOn,
-            body = endBody
+          Right(
+            EndNode(
+              id = id,
+              name = originalWorkflowNode.name,
+              description = originalWorkflowNode.description,
+              dependentOn = dependentOn,
+              body = endBody
+            )
           )
       }
 

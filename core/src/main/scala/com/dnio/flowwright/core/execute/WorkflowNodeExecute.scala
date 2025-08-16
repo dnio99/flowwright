@@ -108,6 +108,8 @@ object WorkflowNodeExecute {
     Task
   ] & JmespathZio.Service, WorkflowErrors.WorkflowError, Json] = {
     workflowNode match {
+      case startNode: WorkflowNode.StartNode =>
+        startNode.execute(data, workflowTaskState)
       case endNode: WorkflowNode.EndNode =>
         endNode.execute(data, workflowTaskState)
       case httpRequestNode: WorkflowNode.HttpRequestNode =>

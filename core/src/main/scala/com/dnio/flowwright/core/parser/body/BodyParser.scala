@@ -2,6 +2,7 @@ package com.dnio.flowwright.core.parser.body
 import com.dnio.flowwright.core.errors.WorkflowErrors.WorkflowError
 import com.dnio.flowwright.core.node.NodeKind
 import com.dnio.flowwright.core.node.body.OriginalEndBody
+import com.dnio.flowwright.core.node.body.OriginalStartBody
 import com.dnio.flowwright.core.node.body.OriginalWorkflowNodeBody
 import com.dnio.flowwright.core.node.body.WorkflowNodeBody
 import io.circe.Decoder
@@ -23,6 +24,7 @@ object BodyParser {
   ): Either[WorkflowError, WorkflowNodeBody[?, ?]] = {
     nodeKind match {
       case NodeKind.HttpRequest => HttpRequestBodyParser.parse(json)
+      case NodeKind.Start       => CommonParser[OriginalStartBody]().parse(json)
       case NodeKind.End         => CommonParser[OriginalEndBody]().parse(json)
     }
   }

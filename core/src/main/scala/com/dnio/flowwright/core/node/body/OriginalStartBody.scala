@@ -2,12 +2,13 @@ package com.dnio.flowwright.core.node.body
 
 import com.dnio.flowwright.core.errors.WorkflowErrors
 import com.dnio.flowwright.core.node.body.WorkflowNodeBody.StartBody
+import io.circe.Decoder
 import io.circe.Json
 
 final case class OriginalStartBody(
     input: Option[Map[String, Json]],
     postProcessExpression: Option[String] = None
-) extends OriginalWorkflowNodeBody {
+) extends OriginalWorkflowNodeBody derives Decoder {
 
   override def toWorkflowNodeBody
       : Either[WorkflowErrors.WorkflowError, WorkflowNodeBody[?, ?]] = Right(

@@ -5,14 +5,14 @@ import com.dnio.flowwright.core.test_layer.Http4sLayer
 import com.dnio.jmespath.JmespathZio
 import io.circe.Json
 import org.http4s.client.Client
-import zio.{Scope, Task, ZIO, ZLayer}
-import zio.test.{
-  Spec,
-  TestAspect,
-  TestEnvironment,
-  ZIOSpecDefault,
-  assertCompletes
-}
+import zio.Scope
+import zio.Task
+import zio.ZIO
+import zio.ZLayer
+import zio.test.Spec
+import zio.test.TestEnvironment
+import zio.test.ZIOSpecDefault
+import zio.test.assertCompletes
 
 object WorkflowExecuteSpec extends ZIOSpecDefault {
 
@@ -87,7 +87,7 @@ object WorkflowExecuteSpec extends ZIOSpecDefault {
           _ <- ZIO.logInfo(res.noSpaces)
 
         } yield assertCompletes).provideLayer(layer)
-      } @@ TestAspect.ignore,
+      },
       test("Execute Workflow Test 01") {
 
         val jsonStr = """{

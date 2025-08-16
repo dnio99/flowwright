@@ -5,6 +5,7 @@ import com.dnio.flowwright.core.errors.WorkflowErrors
 import com.dnio.flowwright.core.errors.WorkflowErrors.WorkflowError
 import com.dnio.flowwright.core.node.NodeId
 import com.dnio.flowwright.core.node.NodeKind
+import com.dnio.flowwright.core.node.NodeKind.Start
 import com.dnio.flowwright.core.node.WorkflowNode
 import com.dnio.flowwright.core.node.WorkflowNode._
 import com.dnio.flowwright.core.workflow.OriginalWorkflow
@@ -17,23 +18,36 @@ object WorkflowParser {
 
   private def checkDependentOn(
       workflowNodes: Seq[WorkflowNode]
-  ): Either[WorkflowErrors.WorkflowNodeNotFoundError, Seq[WorkflowNode]] = {
+  ): Either[WorkflowErrors.WorkflowError, Seq[WorkflowNode]] = {
     val map = workflowNodes.map(node => (node.id -> node)).toMap
-
-    workflowNodes
-      .flatMap(
-        _.dependentOn
+    if (
+      workflowNodes.count(workflowNode =>
+        workflowNode.dependentOn.isEmpty && workflowNode.kind != Start
+      ) != 0
+    ) {
+      Left(
+        WorkflowErrors.WorkflowNodeValidationError(
+          "Only the Start node can have no dependencies"
+        )
       )
-      .map(nodeId =>
-        map
-          .get(nodeId)
-          .toRight(
-            WorkflowErrors.WorkflowNodeNotFoundError(
-              s"node with id $nodeId not found in workflow"
+    } else {
+      // check if all dependentOn nodes exist in the map
+      workflowNodes
+        .flatMap(
+          _.dependentOn
+        )
+        .map(nodeId =>
+          map
+            .get(nodeId)
+            .toRight(
+              WorkflowErrors.WorkflowNodeNotFoundError(
+                s"node with id $nodeId not found in workflow"
+              )
             )
-          )
-      )
-      .sequence
+        )
+        .sequence
+    }
+
   }
 
   private def hasCycle(workflowNodes: Seq[WorkflowNode]) = {
@@ -144,6 +158,34 @@ object WorkflowParser {
       )
     )
 
+  private def verifyStartNode(
+      workflowNodes: Seq[WorkflowNode]
+  ): Either[WorkflowError, StartNode] = {
+    for {
+      workflowNode <- workflowNodes.filter(workflowNode =>
+        workflowNode.kind == Start
+      ) match {
+        case node :: Nil => Right(node)
+        case _           =>
+          Left(
+            WorkflowErrors.WorkflowNodeValidationError(
+              "Workflow must have exactly one start node"
+            )
+          )
+      }
+      startNode <- workflowNode match {
+        case startNode: StartNode if startNode.dependentOn.isEmpty =>
+          Right(startNode)
+        case _ =>
+          Left(
+            WorkflowErrors.WorkflowNodeValidationError(
+              "Start node must not have any dependencies"
+            )
+          )
+      }
+    } yield startNode
+  }
+
   def parse(
       originalWorkflow: OriginalWorkflow
   ): Either[WorkflowError, Workflow] = {
@@ -157,6 +199,8 @@ object WorkflowParser {
         .sequence
 
       _ <- checkNodeId(workflowNodes)
+
+      startNode <- verifyStartNode(workflowNodes)
 
       // check dependentOn
       _ <- checkDependentOn(workflowNodes)
@@ -172,7 +216,9 @@ object WorkflowParser {
           Right(())
         }
 
-      nodes = workflowNodes.filterNot(_.kind == NodeKind.End)
+      nodes = workflowNodes.filterNot(node =>
+        node.kind == NodeKind.End || node.kind == NodeKind.Start
+      )
 
       leafNodeIds = getLeafNodes(nodes).map(_.id)
 
@@ -191,6 +237,7 @@ object WorkflowParser {
       description = originalWorkflow.description,
       // remove end node from nodes
       nodes = nodes,
+      startNode = startNode,
       endNode = endNode,
       leafNodeIds = leafNodeIds.toSet,
       childrenNodes = childrenNodes

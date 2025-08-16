@@ -61,6 +61,7 @@ def commonSettings(module: String) =
     name := module,
     scalafixOnCompile := true,
     scalafmtOnCompile := true,
+    run / connectInput := true,
     scalaVersion := scala3Version,
     semanticdbEnabled := true, // enable SemanticDB
     scalacOptions ++= Seq(

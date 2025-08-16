@@ -9,7 +9,6 @@ import io.circe.Json
 import org.http4s.client.Client
 import zio.Scope
 import zio.Task
-import zio.ZIO
 import zio.ZLayer
 import zio.test.Spec
 import zio.test.TestEnvironment
@@ -27,8 +26,7 @@ object ZioHttp4sClientSpec extends ZIOSpecDefault {
       test("request Test") {
         (
           for {
-            res <- "https://httpbin.nadileaf.com/get".get[Json]
-            _ <- ZIO.logInfo(s"response: ${res.spaces2}")
+            _ <- "https://httpbin.nadileaf.com/get".get[Json]
           } yield assertCompletes
         ).provideLayer(
           layer
@@ -44,8 +42,7 @@ object ZioHttp4sClientSpec extends ZIOSpecDefault {
         )
         (
           for {
-            res <- "https://httpbin.nadileaf.com/get".get[Json]
-            _ <- ZIO.logInfo(s"response: ${res.spaces2}")
+            _ <- "https://httpbin.nadileaf.com/get".get[Json]
           } yield assertCompletes
         ).provideLayer(
           layer

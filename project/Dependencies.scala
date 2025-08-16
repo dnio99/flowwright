@@ -60,16 +60,21 @@ object Dependencies {
 
   val zioCore: Seq[ModuleID] = Seq(
     "dev.zio" %% "zio",
-    "dev.zio" %% "zio-streams",
-    "dev.zio" %% "zio-test"
+    "dev.zio" %% "zio-streams"
   ).map(_ % Versions.zio)
+
+  val zioTest: Seq[ModuleID] = Seq(
+    "dev.zio" %% "zio-test" % Versions.zio % Test,
+    "dev.zio" %% "zio-test-sbt" % Versions.zio % Test,
+    "dev.zio" %% "zio-test-magnolia" % Versions.zio % Test
+  )
 
   val zioInterop: Seq[ModuleID] = Seq(
     "dev.zio" %% "zio-interop-cats" % Versions.zioInteropCats,
     "dev.zio" %% "zio-nio" % Versions.zioNio
   )
 
-  val zioFamily: Seq[ModuleID] = zioCore ++ zioInterop
+  val zioFamily: Seq[ModuleID] = zioCore ++ zioInterop ++ zioTest
 
   val circeFamily: Seq[ModuleID] = Seq(
     "io.circe" %% "circe-core",
@@ -82,7 +87,7 @@ object Dependencies {
   )
 
   val jmespathDependencies: Seq[ModuleID] =
-    circeFamily ++ jmesPath ++ circeJackson ++ zioCore ++ logging
+    circeFamily ++ jmesPath ++ circeJackson ++ zioCore ++ logging ++ zioTest
 
   val sharedDependencies: Seq[ModuleID] =
     circeFamily ++ zioFamily ++ http4sClient ++ http4sInteropCirce ++ logging

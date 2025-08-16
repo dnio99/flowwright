@@ -2,8 +2,13 @@ package com.dnio.jmespath.function
 
 import com.dnio.jmespath.JmespathZio
 import io.circe.Json
-import zio.{Scope, ZIO, ZLayer}
-import zio.test.{Spec, TestEnvironment, ZIOSpecDefault, assertCompletes}
+import zio.Scope
+import zio.ZIO
+import zio.ZLayer
+import zio.test.Spec
+import zio.test.TestEnvironment
+import zio.test.ZIOSpecDefault
+import zio.test.assertCompletes
 
 object JsonFunctionSpec extends ZIOSpecDefault {
 
